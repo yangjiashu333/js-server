@@ -4,6 +4,7 @@ import cors from 'cors';
 import logger from './config/logger';
 import upload from './middleware/upload';
 import redisClient from './config/redis';
+import routes from './routes';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.locals.redis = redisClient;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api', routes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.url}`);
@@ -23,17 +25,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello, world!');
-});
-
-app.get('/redis-test', async (req: Request, res: Response) => {
-  try {
-    await app.locals.redis.set('test-key', 'Hello Redis!');
-    const value = await app.locals.redis.get('test-key');
-    res.send(`Value from Redis: ${value}`);
-  } catch (error) {
-    logger.error('Redis test error:', error);
-    res.status(500).send('Error interacting with Redis');
-  }
 });
 
 app.post(
